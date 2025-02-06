@@ -37,7 +37,7 @@ df['Dt_Customer'] = pd.to_datetime(df['Dt_Customer'], dayfirst=True)
 # print(df['Year_Birth'].describe())
 # print(df['Income'].describe())
 # print(df['Recency'].describe())
-'''
+
 # EDA, most customers are aged 40-60
 sns.histplot(df['Year_Birth'], bins=20, kde=True)
 plt.title('Customer Birth Year Distribution')
@@ -107,47 +107,3 @@ df.to_csv('cleaned_customer_data.csv', index=False)
 # Improve Campaign 3: Investigate why Campaign 3 underperformed.
 # Optimize Web Experience: Reduce friction between web visits and purchases.
 # Data Quality: Standardize marital status categories during data collection.
-'''
-from sklearn.preprocessing import StandardScaler
-
-# Create a new DataFrame for clustering
-clustering_features = df[['Income', 'Total_Spending', 'Recency', 
-                            'NumWebPurchases', 'NumCatalogPurchases', 'NumStorePurchases']].copy()
-
-# Standardize the features
-scaler = StandardScaler()
-clustering_scaled = scaler.fit_transform(clustering_features)
-
-from sklearn.cluster import KMeans
-import numpy as np
-
-# Elbow method
-sse = []
-k_range = range(1, 10)
-for k in k_range:
-    kmeans = KMeans(n_clusters=k, random_state=42)
-    kmeans.fit(clustering_scaled)
-    sse.append(kmeans.inertia_)
-
-plt.figure(figsize=(8, 5))
-plt.plot(k_range, sse, marker='o')
-plt.xlabel('Number of Clusters')
-plt.ylabel('SSE')
-plt.title('Elbow Method For Optimal k')
-plt.show()
-
-# Assuming optimal clusters = 3 based on the elbow method
-optimal_clusters = 3
-kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
-df['Cluster'] = kmeans.fit_predict(clustering_scaled)
-
-# Visualize clusters based on two features, for example: Total_Spending vs. Income
-plt.figure(figsize=(8, 5))
-sns.scatterplot(x='Income', y='Total_Spending', hue='Cluster', data=df, palette='Set1')
-plt.title('Clusters based on Income and Total Spending')
-plt.xlabel('Income')
-plt.ylabel('Total Spending')
-plt.show()
-
-cluster_profile = df.groupby('Cluster')[['Age', 'Income', 'Total_Spending', 'Recency']].mean()
-print(cluster_profile)
